@@ -116,7 +116,7 @@ bind-dynamic
 domain-needed
 bogus-priv
 dhcp-range=10.3.141.50,10.3.141.150,255.255.255.0,12h
-dhcp-option=6,127.0.0.1
+dhcp-option=6,10.3.141.1
 EOF
 
 # Restart RaspAP services
@@ -363,6 +363,14 @@ sysctl -p
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+
+# Allow traffic to local services
+iptables -A INPUT -i wlan0 -p tcp --dport 80 -j ACCEPT   # RaspAP
+iptables -A INPUT -i wlan0 -p tcp --dport 81 -j ACCEPT   # CasaOS
+iptables -A INPUT -i wlan0 -p tcp --dport 8080 -j ACCEPT # AdGuard Home
+iptables -A INPUT -i wlan0 -p tcp --dport 8000 -j ACCEPT # Revive Dashboard
+iptables -A INPUT -i wlan0 -p udp --dport 53 -j ACCEPT   # DNS (UDP)
+iptables -A INPUT -i wlan0 -p tcp --dport 53 -j ACCEPT   # DNS (TCP)
 
 # Save iptables rules
 netfilter-persistent save
